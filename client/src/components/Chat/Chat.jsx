@@ -1,34 +1,36 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { useState } from 'react'
 import './Chat.scss'
+import { AuthContext } from '../../context/AuthContext'
 
-const Chat = () => {
+const Chat = ({chats}) => {
 
-    const [chat, setChat] =useState(true)
+    const [chat, setChat] =useState(false)
+    const {currentUser} = useContext(AuthContext)
 
   return (
     <div className='Chat'>
       <div className="messages">
         <h1>Messages</h1>
-        <div className="message">
-            <img src="https://images.pexels.com/photos/91227/pexels-photo-91227.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" alt="" />
-            <span>John</span>
-            <p>Lorem ipsum dolor sit...</p>
-
-        </div>
-        <div className="message">
-            <img src="https://images.pexels.com/photos/91227/pexels-photo-91227.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" alt="" />
-            <span>John</span>
-            <p>Lorem ipsum dolor sit...</p>
-
-        </div>
-        <div className="message">
-            <img src="https://images.pexels.com/photos/91227/pexels-photo-91227.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" alt="" />
-            <span>John</span>
-            <p>Lorem ipsum dolor sit...</p>
-
-        </div>
+        {chats?.map((c) => (
+          <div
+            className="message"
+            key={c.id}
+            style={{
+              backgroundColor:
+                c.seenBy.includes(currentUser.id) || chat?.id === c.id
+                  ? "white"
+                  : "#fecd514e",
+            }}
+            onClick={() => handleOpenChat(c.id, c.receiver)}
+          >
+            <img src={c.receiver.avatar || "/noavatar.jpg"} alt="" />
+            <span>{c.receiver.username}</span>
+            <p>{c.lastMessage}</p>
+          </div>
+        ))}
       </div>
+      
       {chat && (<div className="chatBox">
         <div className="top">
            <div className="user">

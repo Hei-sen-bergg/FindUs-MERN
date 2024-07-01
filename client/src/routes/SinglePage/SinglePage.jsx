@@ -1,33 +1,59 @@
-import React from 'react'
-import './SinglePage.scss'
-import Slider from '../../components/Slider/Slider'
-import {singlePostData, userData} from '../../lib/dummy'
-import Map from '../../components/Map/Map'
+import React, { useContext,useState } from "react";
+import "./SinglePage.scss";
+import Slider from "../../components/Slider/Slider";
+import Map from "../../components/Map/Map";
+import { useLoaderData } from "react-router-dom";
+import DOMPurify from "dompurify";
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../../context/AuthContext";
+import apiRequest from "../../lib/apiRequest";
 
 const SinglePage = () => {
+  const post = useLoaderData();
+  const [saved, setSaved] = useState(post.isSaved);
+  const {currentUser} = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const handleSave = async() => {
+    if (!currentUser) {
+      navigate("/login");
+    }
+       setSaved((prev) => !prev);
+    try{
+      await apiRequest.post("/users/save", { postId: post.id });
+    }catch(err){
+      console.log(err);
+      setSaved((prev) => !prev);
+    }
+
+  };
+
   return (
-    <div className='SinglePage'>
+    <div className="SinglePage">
       <div className="details">
         <div className="wrapper">
-          <Slider images={singlePostData.images}/>
+          <Slider images={post.images} />
           <div className="info">
             <div className="top">
-             <div className="post">
-              <h1>{singlePostData.title}</h1>
-              <div className="address">
-                <img src="pin.png" alt="" />
-                <span>{singlePostData.address}</span>
+              <div className="post">
+                <h1>{post.title}</h1>
+                <div className="address">
+                  <img src="pin.png" alt="" />
+                  <span>{post.address}</span>
+                </div>
+                <div className="price">$ {post.price}</div>
               </div>
-              <div className="price">$ {singlePostData.price}</div>
-              </div> 
-             <div className="user">
-              <img src={userData.img} alt="" />
-              <span>{userData.name}</span>
-              </div> 
+              <div className="user">
+                <img src={post.user.avatar} alt="" />
+                <span>{post.user.username}</span>
+              </div>
             </div>
-            <div className="bottom">
-              {singlePostData.description}
-            </div>
+            <div
+              className="bottom"
+              dangerouslySetInnerHTML={{
+                __html: DOMPurify.sanitize(post.postDetail.desc),
+              }}
+            ></div>
           </div>
         </div>
       </div>
@@ -39,21 +65,29 @@ const SinglePage = () => {
               <img src="/utility.png" alt="" />
               <div className="featureText">
                 <span>Utilities</span>
-                <p>Renter is responsible</p>
+                {post.postDetail.utilities === "owner" ? (
+                  <p>Owner is responsible</p>
+                ) : (
+                  <p>Tenant is responsible</p>
+                )}
               </div>
             </div>
             <div className="feature">
               <img src="/pet.png" alt="" />
               <div className="featureText">
                 <span>Pet Policy</span>
-                <p>Pets are allowed</p>
+                {post.postDetail.pet === "allowed" ? (
+                  <p>Pets are allowed</p>
+                ) : (
+                  <p>Pets are not allowed</p>
+                )}
               </div>
             </div>
             <div className="feature">
               <img src="/fee.png" alt="" />
               <div className="featureText">
                 <span>Parking</span>
-                <p>Parking for bikes only</p>
+                {post.postDetail.parking}
               </div>
             </div>
           </div>
@@ -61,59 +95,61 @@ const SinglePage = () => {
           <div className="sizes">
             <div className="size">
               <img src="/size.png" alt="" />
-              <span>80sqft</span>
+              <span>{post.postDetail.size} sqft</span>
             </div>
             <div className="size">
               <img src="/bed.png" alt="" />
-              <span>2 bedrooms</span>
+              <span>{post.bedroom} bed</span>
             </div>
             <div className="size">
               <img src="/bath.png" alt="" />
-              <span>1 bathroom</span>
+              <span>{post.bathroom} bathroom</span>
             </div>
           </div>
           <p className="title">Nearby places</p>
           <div className="listHorizontal">
-          <div className="feature">
+            <div className="feature">
               <img src="/bus.png" alt="" />
               <div className="featureText">
                 <span>Bus stop</span>
-                <p>1km aWay</p>
+                <p>{post.postDetail.bus} km away </p>
               </div>
             </div>
             <div className="feature">
               <img src="/school.png" alt="" />
               <div className="featureText">
                 <span>Airport</span>
-                <p>20km away</p>
+                <p>{post.postDetail.airport} km away </p>
               </div>
             </div>
             <div className="feature">
               <img src="/restaurant.png" alt="" />
               <div className="featureText">
                 <span>Train</span>
-                <p>10km away</p>
+                <p>{post.postDetail.train} km away </p>
               </div>
             </div>
           </div>
           <p className="title">Location</p>
           <div className="mapContainer">
-            <Map items={[singlePostData]}/>
+            <Map items={[post]} />
           </div>
           <div className="buttons">
             <button>
               <img src="/chat.png" alt="" />
               Send a message
             </button>
-            <button>
+            <button onClick={handleSave}  style={{
+                backgroundColor: saved ? "#fece51" : "white",
+              }}>
               <img src="/save.png" alt="" />
-              Save place
+              {saved ? "Place Saved" : "Save the Place"}
             </button>
           </div>
         </div>
+      </div>
     </div>
-    </div>
-  )
-}
+  );
+};
 
-export default SinglePage
+export default SinglePage;

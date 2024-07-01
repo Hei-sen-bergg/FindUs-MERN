@@ -1,12 +1,11 @@
 import React from 'react'
-import { listData } from '../../lib/dummy'
 import Card from '../Card/Card'
 import './List.scss'
 
-const List = () => {
+const List = ({posts}) => {
   return (
     <div className='List'>
-      {listData.map(item=>(
+      {posts.map(item=>(
         <Card key={item.id} item={item}/>
       ))}
     </div>
